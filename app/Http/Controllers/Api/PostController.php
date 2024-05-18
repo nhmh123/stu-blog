@@ -222,36 +222,47 @@ class PostController extends Controller
 
     public function getClientPostDetail($postSlug)
     {
-        // $post = Post::where('url', $postSlug)->with(['comments' => function ($query) {
-        //     $query->whereNull('parent_comment_id')->with('comments','user');
-        // }])->first();
+              
+        $post = Post::where('url', $postSlug)->with(['comments' => function ($query) {
+            $query->whereNull('parent_comment_id')->with('comments','user','comment.user');
+        }])->first();
 
-        $post = Post::where('url',$postSlug)
-        ->with([
-            'user.id,username',
-            'comment.replies',
-            'user:id,username',
-            'comments.user:id,username',
-            'comments.replies.user:id,username',
-            'comments.replies.replies.user:id,username',
-            'comments.replies.replies.replies.user:id,username'])
-        ->first();
+        // $post = Post::where('url',$postSlug)
+        // ->with([
+        //     'user.id,username',
+        //     'comment.replies',
+        //     'user:id,username',
+        //     'comments.user:id,username',
+        //     'comments.replies.user:id,username',
+        //     'comments.replies.replies.user:id,username',
+        //     'comments.replies.replies.replies.user:id,username'])
+        // ->first();
 
         // $postComment = commentDataTree($post['comemnts']);
         // $post = Post::where('url', $postSlug)->first();
 
-
-        if ($post == null) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Post not found',
-            ], 404);
-        } else {
-            return response()->json([
-                'status' => 200,
-                'post' => $post,
-                // 'comments' => commentDataTree($post->comments)
-            ], 200);
+        // $post = Post::where('url',$postSlug)->with('comments')->first();
+        
+        if ($post) {
+            $comments = $post->comments;
+            $nestedReplies = getNestedRepliesWithUser($comments);
+            $post->comments = $nestedReplies;
         }
+    
+
+        return $post;
+
+        // if ($post == null) {
+        //     return response()->json([
+        //         'status' => 404,
+        //         'message' => 'Post not found',
+        //     ], 404);
+        // } else {
+        //     return response()->json([
+        //         'status' => 200,
+        //         'post' => $post,
+        //         // 'comments' => commentDataTree($post->comments)
+        //     ], 200);
+        // }
     }
 }

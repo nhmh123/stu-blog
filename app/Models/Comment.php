@@ -23,12 +23,12 @@ class Comment extends Model
     {
         return $this->belongsTo(Post::class, 'post_id', 'id');
     }
-    function replies()
+    function comments()
     {
         return $this->hasMany(Comment::class,'parent_comment_id','id');
     }
     function comment()
     {
-        // return $this->belongsTo(Comment::class, 'parent_comment_id', 'id');
+        return $this->belongsTo(Comment::class, 'parent_comment_id', 'id');
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller
 {
@@ -46,56 +47,6 @@ class AuthController extends Controller
         }
     }
 
-    // public function loginUser(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'email_or_username' => 'required|string',
-    //         'password' => 'required|string',
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => 422,
-    //             'message' => $validator->errors(),
-    //         ], 422);
-    //     } else {
-    //         $user = User::where('email', $request->email_or_username)
-    //             ->orWhere('username', $request->email_or_username)
-    //             ->first();
-    //         if ($user == null) {
-    //             return response()->json([
-    //                 'status' => 404,
-    //                 'message' => 'Account not found',
-    //             ], 404);
-    //         } else {
-    //             $isValid = Hash::check($request->password, $user->password);
-    //             if (!$isValid) {
-    //                 return response()->json([
-    //                     'statusCode' => 401,
-    //                     'message' => 'Incorrect password/username.',
-    //                 ], 401);
-    //             }
-
-    //             $token = Str::random(40);
-    //             $sessionId = Hash::make($token);
-    //             //$request->session()->put($sessionId,  $user->id);
-    //             if ($request->has('remember_me') && $request->remember_me == true) {
-    //                 //Cookie::make('sessionId', $sessionId, 1);
-
-    //                 return response()->json([
-    //                     'statusCode' => 200,
-    //                     'data' => $user,
-    //                 ]);
-    //             }
-
-    //            // Cookie::make('sessionId', $sessionId, 0);
-    //             return response()->json([
-    //                 'statusCode' => 200,
-    //                 'data' => $user,
-    //             ], 200);
-    //         }
-    //     }
-    // }
-
     public function loginUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -113,18 +64,15 @@ class AuthController extends Controller
                 'password' => $request->password,
             ];
 
-            $remember = $request->remember ? true : false;
-            
-            if (Auth::attempt($credentials, $remember)) {
-                // if($remember){
-                //     Cookie::make('remember_token_custom',Auth::user()->getRememberToken(),10);
-                // }
+
+            if (Auth::attempt($credentials, true)) {
+                $user = Auth::user();
+                // $token = $request->user()->createToken('token')->plainTextToken;
+                // $cookie = cookie('jwt', $token, 60 * 24);
 
                 return response([
                     'status' => 200,
                     'message' => 'login successfully',
-                    'user' => Auth::user(),
-                    'remember_token' => Auth::user()->getRememberToken(),
                 ], 200);
             } else {
                 return response([
@@ -132,34 +80,52 @@ class AuthController extends Controller
                     'message' => 'email or password incorrect',
                 ], 422);
             }
+
+            // $user = User::where('email',$request->email)->first();
+
+            // if (Hash::check(request('password'),$user->getAuthPassword())) {
+            //     return ['token' => $user->createToken(time())->plainTextToken];
+
+            // return response([
+            //     'status' => 200,
+            //     'message' => 'login successfully',
+            // ], 200)->withCookie($cookie);
+
+            // } else {
+            //     return response([
+            //         'status' => 422,
+            //         'message' => 'email or password incorrect',
+            //     ], 422);
+            // }
         }
     }
 
-    // public function logout()
-    // {
-    //     $sessionId = Cookie::get('sessionId');
-    //     $value = DB::table('sessions')->select('*')->where('id', $sessionId)->get()->first();
 
-    //     //$value = session($sessionId);
-    //     $value = json_decode($value->payload);
-    //     if ($sessionId != null) {
-    //         if ($value != null) {
-    //             session()->forget($sessionId);
-    //         }
+    // LOGOUT DÙNG SESSION
+    // public function logout(Request $request)
+    // {
+
+    //     if (!Auth::check()) {
+    //         return response()->json([
+    //             'status' => 401,
+    //             'message' => 'Unauthorized',
+    //         ], 401);
     //     }
 
-    //     Cookie::forget('sessionId');
+    //     Auth::logout();
 
     //     return response()->json([
     //         'status' => 200,
-    //         'message' => 'Logout successfully',
-    //         $sessionId,
-    //         $value
+    //         'message' => 'logout successfully',
     //     ], 200);
     // }
 
+
+
+    //LOGOUT DÙNG JWT
     public function logout(Request $request)
     {
+        
         if (!Auth::check()) {
             return response()->json([
                 'status' => 401,
@@ -167,13 +133,14 @@ class AuthController extends Controller
             ], 401);
         }
 
-        Auth::user()->setRememberToken(null);
+        $cookie = Cookie::forget('jwt');
+
         Auth::logout();
 
         return response()->json([
             'status' => 200,
             'message' => 'logout successfully',
-        ], 200);
+        ], 200)->withCookie($cookie);
     }
 
     public function forgotPassword(Request $request)

@@ -26,10 +26,6 @@ use Illuminate\Support\Facades\Auth;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-Route::get('/test',function(){
-    return phpinfo();
-});
 //Auth
 Route::middleware('alreadyLoggedIn')->group(function () {
     Route::post('/register-user', [AuthController::class, 'registerUser']);
@@ -54,7 +50,7 @@ Route::get('/posts', function () {
 Route::get('/posts/{post_slug}', [PostController::class, 'getClientPostDetail']);
 
 //login-needed
-Route::middleware('isLoggedIn')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     //post-comment
     Route::post('/posts/{post_id}/up-comment', [CommentController::class, 'storeComment']);
     //reply-comment

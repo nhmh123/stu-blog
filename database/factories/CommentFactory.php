@@ -17,12 +17,20 @@ class CommentFactory extends Factory
      */
     public function definition()
     {
+        // return [
+        //     'comment_content'=>$this->faker->paragraph(),
+        //     'user_id'=>rand(1,50),
+        //     'post_id'=>rand(1,80),
+        //     'created_at'=>$this->faker->dateTimeBetween('-1 weeks','+3 weeks'),
+        //     'parent_comment_id'=>rand(1,40),
+        // ];
+
         return [
             'comment_content'=>$this->faker->paragraph(),
-            'user_id'=>rand(1,50),
-            'post_id'=>rand(1,80),
+            'user_id'=>30,
+            'post_id'=>27,
             'created_at'=>$this->faker->dateTimeBetween('-1 weeks','+3 weeks'),
-            'parent_comment_id'=>rand(1,40),
+            'parent_comment_id'=>105,
         ];
     }
 }

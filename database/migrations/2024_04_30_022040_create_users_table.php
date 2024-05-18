@@ -24,8 +24,8 @@ return new class extends Migration
             $table->string('url');
             $table->rememberToken()->nullable();
             $table->timestamps();
-            // $table->unsignedBigInteger('role_id');
-            // $table->foreign('role_id')->references('id')->on('roles');
+            $table->unsignedBigInteger('role_id');
+            $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('role_id')->constrained('roles','id');
         });
 
